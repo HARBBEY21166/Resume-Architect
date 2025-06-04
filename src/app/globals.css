@@ -88,9 +88,9 @@
   }
 
   html, body {
-    width: 100%; /* Fill the content area defined by @page margins */
-    height: auto; /* Allow content to flow */
-    min-height: 100%; /* Ensure it fills at least one page height within margins */
+    width: 100%; 
+    height: auto; 
+    min-height: 100%;
     margin: 0 !important;
     padding: 0 !important;
     background-color: white !important;
@@ -112,14 +112,13 @@
     top: -9999px !important;
   }
 
-  /* Reset styles from layout components that wrap the CV preview */
   main,
   main > div,
   main > div > div,
   div[class*="lg:sticky"],
-  .bg-card, /* This rule might be too broad if other .bg-card elements exist that need different print styling */
+  .bg-card, 
   div[class*="shadow-"],
-  .p-6, /* Card padding, to be reset */
+  .p-6, 
   .rounded-lg,
   div[class*="lg:top-24"],
   .bg-muted\/30 {
@@ -131,24 +130,24 @@
     background: none !important;
     box-shadow: none !important;
     border: none !important;
-    padding: 0 !important; /* Remove screen padding - this can be problematic for .cv-template-container if it's also .bg-card */
-    margin: 0 !important;  /* Remove screen margin */
+    padding: 0 !important; 
+    margin: 0 !important;  
     border-radius: 0 !important;
     overflow: visible !important;
     height: auto !important;
     max-height: none !important;
-    width: auto !important; /* Allow natural width or 100% from parent */
+    width: auto !important; 
   }
 
   #cv-preview-area {
     margin: 0 !important;
-    padding: 0 !important; /* Rely on @page margins and template's internal padding */
+    padding: 0 !important; 
     border: none !important;
     box-shadow: none !important;
-    width: 100% !important; /* Fill the content area defined by @page margins */
+    width: 100% !important; 
     max-width: 100% !important;
     height: auto !important;
-    min-height: 100%; /* Fill available height within page margins */
+    min-height: 100%; 
     transform: scale(1) !important;
     background-color: white !important;
     overflow: visible !important;
@@ -156,7 +155,6 @@
     aspect-ratio: auto !important;
   }
 
-  /* Reset the scaling div inside CvPreviewCard */
   #cv-preview-area > div[class*="transform scale"] {
     transform: none !important;
     margin: 0 !important;
@@ -168,11 +166,12 @@
   }
 
   .cv-template-container {
-    width: 100% !important; /* Fill its parent (scaled div) */
-    min-height: 100%; /* Fill height of its parent */
+    width: 170mm !important; /* Fixed width for the CV block */
+    max-width: 100%; /* Ensure it doesn't overflow parent */
+    min-height: 100%; 
     height: auto !important;
-    margin: 0 auto !important; /* Centering, though width 100% makes it less critical */
-    padding: 2rem !important; /* Explicitly set desired padding for print, overriding general resets */
+    margin: 0 auto !important; /* Center the block on the page */
+    padding: 2rem !important; /* Internal padding for content (Modern/Classic templates) */
     box-sizing: border-box !important;
     background-color: white !important;
     color: black !important;
@@ -181,7 +180,6 @@
     overflow: visible !important;
   }
 
-  /* Ensure dark mode styles are overridden for print */
   .dark #cv-preview-area .cv-template-container,
   .dark #cv-preview-area .cv-template-container * {
      background-color: white !important;
