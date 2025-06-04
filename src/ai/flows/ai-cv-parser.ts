@@ -53,12 +53,12 @@ Instructions:
     *   Start with the job title and company name on the first line.
     *   On a new line, include location (and if it's remote) and dates of employment.
     *   Follow with a list of responsibilities or achievements. **Each responsibility or achievement must be on a new line and start with a hyphen and a space (e.g., "- Managed a team...").**
-6.  The 'education' field should list academic qualifications, including the institution name, degree or course title, and dates attended or graduation date.
+6.  The 'education' field should list academic qualifications. Each distinct qualification (e.g., degree, course) should be on a new line. **If multiple qualifications are listed, each should start with a hyphen and a space (e.g., "- BS in Computer Science...").** Include the institution name, degree or course title, and dates attended or graduation date.
 7.  For skills:
     *   'technicalSkills': Combine all programming languages, frameworks, libraries, software tools, platforms (e.g., Figma, Git), and specific technical abilities here.
     *   'personalSkills': List soft skills, interpersonal abilities, and general competencies like communication, teamwork, problem-solving, UI/UX Design (if listed as a general skill rather than a tool proficiency).
-8.  The 'certifications' field should list any professional certifications, including the name of the certification, the issuing body, and the date obtained.
-9.  The 'interest' field should capture hobbies or personal interests.
+8.  The 'certifications' field should list any professional certifications. Each distinct certification should be on a new line. **If multiple certifications are listed, each should start with a hyphen and a space (e.g., "- Certified Scrum Master...").** Include the name of the certification, the issuing body, and the date obtained.
+9.  The 'interest' field should capture hobbies or personal interests. Each distinct interest should be on a new line. **If multiple interests are listed, each should start with a hyphen and a space (e.g., "- Reading...").**
 
 Ensure that the contact information is comprehensive and includes email, phone number and any professional web links.
 Preserve the structure (like bullet points or paragraph breaks) within each section's content as much as possible.

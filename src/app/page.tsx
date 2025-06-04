@@ -14,28 +14,45 @@ import { Terminal } from "lucide-react";
 
 
 const EXAMPLE_CV = `John Doe
-john@email.com | (123) 456-7890 | linkedin.com/in/johndoe
+Front-End Developer
+john@email.com | (123) 456-7890 | linkedin.com/in/johndoe | github.com/johndoe | New York, NY
+
+OBJECTIVE
+A highly motivated and results-oriented Front-End Developer with 5+ years of experience in creating and implementing innovative web solutions. Proven ability to work independently and as part of a team to deliver high-quality products.
 
 EXPERIENCE
 Senior Developer, ABC Tech (2020-Present)
-- Led team of 5 developers
+New York, NY
+- Led team of 5 developers in agile environment.
 - Implemented React architecture for a client-facing product resulting in a 20% performance increase.
 - Mentored junior developers and conducted code reviews.
+- Spearheaded the adoption of TypeScript, improving code quality and reducing bugs by 15%.
 
 Software Engineer, XYZ Solutions (2018-2020)
-- Developed and maintained features for a large-scale e-commerce platform.
-- Collaborated with cross-functional teams to deliver high-quality software.
+San Francisco, CA (Remote)
+- Developed and maintained features for a large-scale e-commerce platform using Angular and Node.js.
+- Collaborated with cross-functional teams to deliver high-quality software on tight deadlines.
+- Contributed to the migration of legacy systems to modern microservices architecture.
 
 EDUCATION
-BS Computer Science, University X (2016-2020)
-- Graduated with Honors
-- President of the Coding Club
+- BS Computer Science, University X (2016-2020)
+  - Graduated with Honors (GPA: 3.8/4.0)
+  - President of the Coding Club
+  - Relevant coursework: Data Structures, Algorithms, Web Development, Database Management
 
 SKILLS
-Programming Languages: JavaScript, Python, Java, C++
-Frameworks/Libraries: React, Node.js, Express, Spring Boot
-Databases: MongoDB, PostgreSQL, MySQL
-Tools: Git, Docker, Kubernetes, AWS
+Technical Skills: JavaScript (ES6+), TypeScript, React, Angular, Node.js, Express, HTML5, CSS3, SASS, Python, Java, C++, MongoDB, PostgreSQL, MySQL, RESTful APIs, GraphQL
+Tools & Platforms: Git, Docker, Kubernetes, AWS (EC2, S3, Lambda), Jenkins, Jira, Figma
+Personal Skills: Problem-solving, Communication, Teamwork, Agile Methodologies, Leadership, Adaptability
+
+CERTIFICATIONS
+- Certified Kubernetes Application Developer (CKAD) - The Linux Foundation (2022)
+- AWS Certified Solutions Architect – Associate - Amazon Web Services (2021)
+
+INTERESTS
+- Open-source contributions
+- Attending tech meetups and conferences
+- Hiking and outdoor activities
 `;
 
 
@@ -88,7 +105,9 @@ export default function HomePage() {
 
     setIsDownloadingDocx(true);
     try {
-      await generateDocxForModernTemplate(parsedData); // We'll implement based on modern template first
+      // For now, we only generate DOCX for the modern template.
+      // Later, we can add a switch or different functions for other templates if needed.
+      await generateDocxForModernTemplate(parsedData); 
       toast({ title: "DOCX Generated", description: "Your CV has been downloaded." });
     } catch (e) {
       console.error("DOCX Generation error:", e);

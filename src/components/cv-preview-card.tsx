@@ -40,19 +40,19 @@ South Africa (Remote) (Sept 2024)
 - Collaborated with WanderUnion, a travel platform, to prototype and design user interfaces to enhance user experience.
 - Developed user-centered designs for the sign-up flow and simplified options for signing up as a Traveler or Operator.
 - Implemented design adjustments based on client feedback, including color consistency to maintain brand identity.`,
-  education: `Advanced Front-End Development, ALX (Nov 2024 – Mar 2025)
-Front-End Web Development, ALX (May 2024 – Oct 2024)
-Responsive Web Design, freeCodeCamp (Jun 2022 – Oct 2022)`,
+  education: `- Advanced Front-End Development, ALX (Nov 2024 – Mar 2025)
+- Front-End Web Development, ALX (May 2024 – Oct 2024)
+- Responsive Web Design, freeCodeCamp (Jun 2022 – Oct 2022)`,
   technicalSkills: `Languages & Frameworks: HTML5, CSS3, TypeScript, JavaScript, WordPress, React, Firebase, Next.js, Tailwind, Bootstrap
 Tools & Platforms: Figma, Git/GitHub, Prototyping, UI/UX Design, Wireframing`,
   personalSkills: 'UI Design, UX Design, Google Workspace, Slack, Communication, Teamwork, Problem-Solving',
-  certifications: `Front-End Software Engineering Job Simulation, Skyscanner Forage (Apr 2025)
-Certificate Of Front-End Web Development, Alx_Africa (Feb 2025)
-Certificate Of Web Development, GAOTek Inc. (Jan 2025)
-Responsive Web Design, freeCodeCamp (Oct 2022)`,
-  interest: `Problem-Solving Games (e.g., puzzles or coding challenges)
-UI/UX Design
-Exploring and learning new technologies related to web development.`,
+  certifications: `- Front-End Software Engineering Job Simulation, Skyscanner Forage (Apr 2025)
+- Certificate Of Front-End Web Development, Alx_Africa (Feb 2025)
+- Certificate Of Web Development, GAOTek Inc. (Jan 2025)
+- Responsive Web Design, freeCodeCamp (Oct 2022)`,
+  interest: `- Problem-Solving Games (e.g., puzzles or coding challenges)
+- UI/UX Design
+- Exploring and learning new technologies related to web development.`,
 };
 
 export function CvPreviewCard({ parsedData, selectedTemplate }: CvPreviewCardProps) {
