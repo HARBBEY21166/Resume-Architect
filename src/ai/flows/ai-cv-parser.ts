@@ -21,7 +21,11 @@ const ParseCVOutputSchema = z.object({
   contactInformation: z.string().describe('The contact information of the person, including email and phone number.'),
   experience: z.string().describe('The work experience of the person.'),
   education: z.string().describe('The education history of the person.'),
-  skills: z.string().describe('The skills of the person.'),
+  technicalSkills: z.string().describe('The technical skills of the person.'),
+  personalSkills: z.string().describe('The personal skills of the person.'),
+  objective: z.string().describe('The career objective or summary of the person.'),
+  certifications: z.string().describe('The certifications obtained by the person.'),
+  interest: z.string().describe('The interests or hobbies of the person.'),
 });
 export type ParseCVOutput = z.infer<typeof ParseCVOutputSchema>;
 
@@ -33,7 +37,7 @@ const prompt = ai.definePrompt({
   name: 'parseCVPrompt',
   input: {schema: ParseCVInputSchema},
   output: {schema: ParseCVOutputSchema},
-  prompt: `You are an expert CV parser.  You will receive a CV in plain text format and you will parse it into its constituent sections.  The sections are name, contact information, experience, education, and skills.
+  prompt: `You are an expert CV parser.  You will receive a CV in plain text format and you will parse it into its constituent sections.  The sections are name, contact information, objective, experience, technical skills, personal skills, education, certifications and interest.
 
 CV Text: {{{cvText}}}
 

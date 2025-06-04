@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { ParsedCvData, TemplateKey } from '@/types/cv';
@@ -15,9 +16,13 @@ interface CvPreviewCardProps {
 const placeholderData: ParsedCvData = {
   name: 'Your Name',
   contactInformation: 'your.email@example.com | (123) 456-7890 | linkedin.com/in/yourprofile',
-  experience: 'Company Name (Year - Present)\n- Your responsibilities and achievements.',
-  education: 'University Name (Year - Year)\n- Your degree and field of study.',
-  skills: 'Skill 1, Skill 2, Skill 3',
+  objective: 'A brief summary of your career goals or professional profile. This is placeholder text that you can replace with your own objective statement.',
+  experience: 'Company Name (Year - Present)\n- Your responsibilities and achievements.\n\nAnother Company (Year - Year)\n- Other roles and accomplishments.',
+  education: 'University Name (Year - Year)\n- Your degree and field of study.\n\nAnother Institution (Year - Year)\n- Relevant coursework or certifications.',
+  technicalSkills: 'JavaScript, React, Node.js, Python, SQL, AWS, Docker',
+  personalSkills: 'Teamwork, Communication, Problem-solving, Leadership, Adaptability',
+  certifications: 'Certified Professional Developer (Year)\nAdvanced Cloud Practitioner (Year)',
+  interest: 'Coding personal projects, Reading tech blogs, Hiking, Photography',
 };
 
 export function CvPreviewCard({ parsedData, selectedTemplate }: CvPreviewCardProps) {
