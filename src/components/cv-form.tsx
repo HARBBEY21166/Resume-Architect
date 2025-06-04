@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { RotateCcw, Sparkles, Palette, Loader2, FileDown } from 'lucide-react';
+import { RotateCcw, Sparkles, Palette, Loader2, FileDown, Printer } from 'lucide-react';
 import type { TemplateKey } from '@/types/cv';
 
 interface CvFormProps {
@@ -17,8 +17,10 @@ interface CvFormProps {
   onParse: () => void;
   onReset: () => void;
   onDownloadDocx: () => void;
+  onDownloadPdf: () => void; // New prop
   isParsing: boolean;
   isDownloadingDocx: boolean;
+  isDownloadingPdf: boolean; // New prop
 }
 
 const templates: { key: TemplateKey; label: string }[] = [
@@ -35,8 +37,10 @@ export function CvForm({
   onParse,
   onReset,
   onDownloadDocx,
+  onDownloadPdf,
   isParsing,
   isDownloadingDocx,
+  isDownloadingPdf,
 }: CvFormProps) {
   const handleTextChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     onCvTextChange(event.target.value);
@@ -91,9 +95,9 @@ export function CvForm({
           )}
           Generate Preview
         </Button>
-        <Button 
-          onClick={onDownloadDocx} 
-          disabled={isDownloadingDocx || !cvText.trim()}
+        <Button
+          onClick={onDownloadDocx}
+          disabled={isDownloadingDocx || !cvText.trim() || !parsedData}
           variant="outline"
         >
           {isDownloadingDocx ? (
@@ -103,6 +107,18 @@ export function CvForm({
           )}
           Download DOCX
         </Button>
+        <Button
+          onClick={onDownloadPdf}
+          disabled={isDownloadingPdf || !cvText.trim() || !parsedData}
+          variant="outline"
+        >
+          {isDownloadingPdf ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Printer className="mr-2 h-4 w-4" />
+          )}
+          Download PDF
+        </Button>
         <Button variant="outline" onClick={onReset}>
           <RotateCcw className="mr-2 h-4 w-4" />
           Reset
@@ -111,3 +127,10 @@ export function CvForm({
     </div>
   );
 }
+
+// Helper to determine if parsedData is available, as CvForm doesn't directly receive it
+// This is a bit of a workaround due to component structure.
+// A more robust solution might involve lifting parsedData check to HomePage
+// or passing a specific boolean prop like `isPreviewAvailable`.
+// For now, we assume if cvText is present and parsing isn't happening, preview *could* be available.
+const parsedData = typeof window !== 'undefined' && (window as any).__parsedDataForCvForm;
