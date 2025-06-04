@@ -6,14 +6,14 @@ import type { ParsedCvData } from '@/types/cv';
 const createSection = (
   sectionTitle: string,
   content: string | undefined | null,
-  headingLevel: HeadingLevel // Retained for semantic mapping, though styling is direct
+  headingLevel: HeadingLevel
 ): Paragraph[] => {
   const paragraphs: Paragraph[] = [];
   if (sectionTitle) {
     paragraphs.push(
       new Paragraph({
         text: sectionTitle,
-        style: "SectionTitleStyle", 
+        style: "SectionTitleStyle",
       })
     );
   }
@@ -21,14 +21,13 @@ const createSection = (
     const lines = content.split('\n');
     for (let i = 0; i < lines.length; i++) {
       let line = lines[i];
-      const trimmedLine = line.trimStart(); 
-      
+      const trimmedLine = line.trimStart();
+
       if (trimmedLine) {
         const isBullet = trimmedLine.startsWith('- ') || trimmedLine.startsWith('* ');
         const textContent = isBullet ? trimmedLine.substring(trimmedLine.indexOf(' ') + 1).trimStart() : line;
 
         const textRuns = [];
-        // Special handling for Experience section to bold titles/company lines
         if (sectionTitle.toLowerCase() === 'experience' && !isBullet && textContent.trim()) {
           textRuns.push(new TextRun({ text: textContent.trimEnd(), bold: true }));
         } else if (textContent.trim()) {
@@ -42,29 +41,31 @@ const createSection = (
             new Paragraph({
               children: textRuns,
               bullet: { level: 0 },
-              indent: { left: convertInchesToTwip(0.25) }, // Standard bullet indent
-              style: 'NormalParaStyle', 
-              spacing: { after: convertInchesToTwip(0.05) } // Small space after bullet items
+              indent: { left: convertInchesToTwip(0.25) },
+              style: 'NormalParaStyle',
+              spacing: { after: convertInchesToTwip(0.05) }
             })
           );
         } else {
           paragraphs.push(
             new Paragraph({
               children: textRuns,
-              style: 'NormalParaStyle', 
+              style: 'NormalParaStyle',
             })
           );
         }
-      } else { 
+      } else {
          if (line.length > 0 && !line.trim()) {
             paragraphs.push(new Paragraph({style: 'NormalParaStyle'}));
          }
       }
     }
   }
-  // Add a bit more space after a section before the next one starts
   if (paragraphs.length > 0) {
-    paragraphs[paragraphs.length -1]. زيادةSpacing({ after: convertInchesToTwip(0.15) });
+    const lastParagraph = paragraphs[paragraphs.length - 1];
+    const currentSpacing = lastParagraph.properties.spacing || {};
+    currentSpacing.after = (currentSpacing.after || 0) + convertInchesToTwip(0.15);
+    lastParagraph.properties.spacing = currentSpacing;
   }
   return paragraphs;
 };
@@ -81,8 +82,8 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
       }
     });
   }
-  
-  const children = [
+
+  const children: Paragraph[] = [
     new Paragraph({
       text: name || "Your Name",
       style: "NameStyle",
@@ -97,14 +98,14 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
   }
 
   children.push(...contactParagraphs);
-  
+
   children.push(new Paragraph({ style: "NormalParaStyle", spacing: { before: convertInchesToTwip(0.1) } }));
 
 
   if (objective) children.push(...createSection("Objective", objective, HeadingLevel.HEADING_3));
   if (experience) children.push(...createSection("Experience", experience, HeadingLevel.HEADING_3));
   if (education) children.push(...createSection("Education", education, HeadingLevel.HEADING_3));
-  
+
   const skillsParagraphs: Paragraph[] = [];
   if (technicalSkills || personalSkills) {
      skillsParagraphs.push(
@@ -125,8 +126,11 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
             if (line.trim()) skillsParagraphs.push(new Paragraph({ text: line.trim(), style: "NormalParaStyle" }));
         });
     }
-     if (skillsParagraphs.length > 1) { // Check if any skill content was added
-        skillsParagraphs[skillsParagraphs.length -1].เพิ่มSpacing({ after: convertInchesToTwip(0.15) });
+     if (skillsParagraphs.length > 1) { 
+        const lastSkillParagraph = skillsParagraphs[skillsParagraphs.length - 1];
+        const currentSkillSpacing = lastSkillParagraph.properties.spacing || {};
+        currentSkillSpacing.after = (currentSkillSpacing.after || 0) + convertInchesToTwip(0.15);
+        lastSkillParagraph.properties.spacing = currentSkillSpacing;
     }
     children.push(...skillsParagraphs);
   }
@@ -146,40 +150,40 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
           name: "Name Style",
           basedOn: "Normal",
           next: "Normal",
-          run: { size: 44, bold: true, font: "Calibri" }, // 22pt
-          paragraph: { alignment: AlignmentType.CENTER, spacing: { after: convertInchesToTwip(0.05) } },
+          run: { size: 44, bold: true, font: "Calibri" },
+          paragraph: { alignment: AlignmentType.CENTER, spacing: { after: 100 } }, // approx 0.05 inches
         },
         {
           id: "TitleStyle",
           name: "Title Style",
           basedOn: "Normal",
           next: "Normal",
-          run: { size: 28, font: "Calibri" }, // 14pt
-          paragraph: { alignment: AlignmentType.CENTER, spacing: { after: convertInchesToTwip(0.1) } },
+          run: { size: 28, font: "Calibri" },
+          paragraph: { alignment: AlignmentType.CENTER, spacing: { after: 200 } }, // approx 0.1 inches
         },
         {
           id: "ContactInfoStyle",
           name: "Contact Info Style",
           basedOn: "Normal",
           next: "Normal",
-          run: { font: "Calibri", size: 20 }, // 10pt
-          paragraph: { alignment: AlignmentType.CENTER, spacing: { after: convertInchesToTwip(0.02) } },
+          run: { font: "Calibri", size: 20 },
+          paragraph: { alignment: AlignmentType.CENTER, spacing: { after: 40 } }, // approx 0.02 inches
         },
         {
           id: "SectionTitleStyle",
           name: "Section Title Style",
           basedOn: "Normal",
           next: "Normal",
-          run: { size: 24, bold: true, font: "Calibri", color: "4F81BD" }, // 12pt, Accent color
-          paragraph: { spacing: { before: convertInchesToTwip(0.2), after: convertInchesToTwip(0.1) } },
+          run: { size: 24, bold: true, font: "Calibri", color: "4F81BD" },
+          paragraph: { spacing: { before: 400, after: 200 } }, // approx 0.2 & 0.1 inches
         },
         {
           id: "SkillSubheadingStyle",
           name: "Skill Subheading",
           basedOn: "Normal",
           next: "Normal",
-          run: { size: 22, bold: true, font: "Calibri" }, // 11pt bold
-          paragraph: { spacing: { before: convertInchesToTwip(0.05), after: convertInchesToTwip(0.05) } },
+          run: { size: 22, bold: true, font: "Calibri" },
+          paragraph: { spacing: { before: 100, after: 100 } }, // approx 0.05 inches
         },
         {
           id: "NormalParaStyle",
@@ -187,8 +191,8 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
           basedOn: "Normal",
           next: "Normal",
           quickFormat: true,
-          run: { font: "Calibri", size: 22 }, // 11pt
-          paragraph: { spacing: { after: convertInchesToTwip(0.07) } },
+          run: { font: "Calibri", size: 22 },
+          paragraph: { spacing: { after: 140 } }, // approx 0.07 inches
         },
       ],
     },
@@ -196,7 +200,7 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
       properties: {
         page: {
           margin: {
-            top: convertInchesToTwip(0.75), 
+            top: convertInchesToTwip(0.75),
             right: convertInchesToTwip(0.75),
             bottom: convertInchesToTwip(0.75),
             left: convertInchesToTwip(0.75),
@@ -210,19 +214,3 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
   const blob = await Packer.toBlob(doc);
   saveAs(blob, `${(name || 'CV').replace(/\s+/g, '_')}_Modern.docx`);
 }
-
-// Helper for Paragraph to add spacing - a bit of a workaround since direct modification isn't straightforward
-interface ParagraphWithSpacing extends Paragraph {
-    เพิ่มSpacing?(spacingOptions: { after?: number; before?: number }): void;
-}
-
-Paragraph.prototype.เพิ่มSpacing = function(spacingOptions: { after?: number; before?: number }) {
-    const currentSpacing = this.properties.spacing || {};
-    if (spacingOptions.after !== undefined) {
-        currentSpacing.after = (currentSpacing.after || 0) + spacingOptions.after;
-    }
-    if (spacingOptions.before !== undefined) {
-        currentSpacing.before = (currentSpacing.before || 0) + spacingOptions.before;
-    }
-    this.properties.spacing = currentSpacing;
-};
