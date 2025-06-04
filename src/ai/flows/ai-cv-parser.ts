@@ -49,7 +49,10 @@ Instructions:
 2.  Extract the professional title (e.g., 'Front-End Developer', 'Software Engineer') if present, and place it in the 'title' field. If not present, this can be omitted.
 3.  For 'contactInformation', gather all contact details: email, phone number, physical address (if available), and any links to personal portfolios, GitHub, LinkedIn, or other professional profiles. Format these clearly, preserving line breaks if the original text uses them for structure.
 4.  The 'objective' field should contain the career objective or summary statement.
-5.  The 'experience' field should detail work history. For each role, include the job title, company name, location (and if it's remote), dates of employment, and a list of responsibilities or achievements.
+5.  The 'experience' field should detail work history. For each role:
+    *   Start with the job title and company name on the first line.
+    *   On a new line, include location (and if it's remote) and dates of employment.
+    *   Follow with a list of responsibilities or achievements. **Each responsibility or achievement must be on a new line and start with a hyphen and a space (e.g., "- Managed a team...").**
 6.  The 'education' field should list academic qualifications, including the institution name, degree or course title, and dates attended or graduation date.
 7.  For skills:
     *   'technicalSkills': Combine all programming languages, frameworks, libraries, software tools, platforms (e.g., Figma, Git), and specific technical abilities here.
@@ -59,6 +62,7 @@ Instructions:
 
 Ensure that the contact information is comprehensive and includes email, phone number and any professional web links.
 Preserve the structure (like bullet points or paragraph breaks) within each section's content as much as possible.
+For the 'experience' section, ensure each distinct job role's details are clearly separated, typically by one or more blank lines if multiple roles are listed.
 `,
 });
 
@@ -73,4 +77,3 @@ const parseCVFlow = ai.defineFlow(
     return output!;
   }
 );
-
