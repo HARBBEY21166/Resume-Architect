@@ -1,4 +1,3 @@
-
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, ExternalHyperlink } from 'docx';
 import { saveAs } from 'file-saver';
 import type { ParsedCvData } from '@/types/cv';
@@ -26,31 +25,44 @@ const createSection = (
       const trimmedLineStart = line.trimStart();
       const fullTrimmedLine = line.trim();
 
-      if (!fullTrimmedLine) { 
+      if (!fullTrimmedLine) {
         if (sectionTitle.toLowerCase() === 'experience') {
           isFirstNonBulletInExperienceEntry = true;
         }
-        // Add an empty paragraph for spacing, but ensure it doesn't get unintended styling
-        const emptyPara = new Paragraph({ text: '', style: 'NormalParaStyle' });
+
+        // Define default spacing options
+        let spacingOptions = {};
+
+        // Conditionally add spacing if the last paragraph wasn't a section title
         if (paragraphs.length > 0) {
-            const lastPara = paragraphs[paragraphs.length - 1];
-            // Avoid excessive spacing if the last para was already a section title or specific styled para.
-            if (!lastPara.Style?.startsWith('SectionTitle')) {
-                 emptyPara. زيادةSpacing({before: 80, after: 80});
-            }
+          const lastPara = paragraphs[paragraphs.length - 1];
+          if (!lastPara.Style?.startsWith('SectionTitle')) {
+            spacingOptions = { before: 80, after: 80 };
+          }
         }
+
+        // Create the empty paragraph with the determined spacing options
+        const emptyPara = new Paragraph({
+          text: '',
+          style: 'NormalParaStyle',
+          paragraph: { // Spacing is inside the 'paragraph' property
+            spacing: spacingOptions,
+          },
+        });
+
         paragraphs.push(emptyPara);
         continue;
       }
+
 
       const isBullet = trimmedLineStart.startsWith('- ') || trimmedLineStart.startsWith('* ');
       const textContentForRun = (isBullet ? trimmedLineStart.substring(trimmedLineStart.indexOf(' ') + 1) : line).trimEnd();
 
 
-      if (!textContentForRun.trim() && isBullet) { 
+      if (!textContentForRun.trim() && isBullet) {
         continue;
       }
-      if (!textContentForRun.trim() && !isBullet) { 
+      if (!textContentForRun.trim() && !isBullet) {
         // Allow empty lines to pass through as paragraph spacing if intended by user input
          paragraphs.push(new Paragraph({ text: '', style: 'NormalParaStyle', spacing: {after: 120} }));
         if (sectionTitle.toLowerCase() === 'experience') {
@@ -65,16 +77,16 @@ const createSection = (
         if (!isBullet) {
           if (isFirstNonBulletInExperienceEntry) {
             textRuns.push(new TextRun({ text: textContentForRun, bold: true, font: "Calibri", size: 22 }));
-            isFirstNonBulletInExperienceEntry = false; 
+            isFirstNonBulletInExperienceEntry = false;
           } else {
-            textRuns.push(new TextRun({ text: textContentForRun, font: "Calibri", size: 22 })); 
+            textRuns.push(new TextRun({ text: textContentForRun, font: "Calibri", size: 22 }));
           }
-        } else { 
+        } else {
           textRuns.push(new TextRun({ text: textContentForRun, font: "Calibri", size: 22 }));
           // After a bullet point, the next non-bullet line should be considered a new entry header
-          isFirstNonBulletInExperienceEntry = true; 
+          isFirstNonBulletInExperienceEntry = true;
         }
-      } else { 
+      } else {
         textRuns.push(new TextRun({ text: textContentForRun, font: "Calibri", size: 22 }));
       }
 
@@ -84,16 +96,16 @@ const createSection = (
             new Paragraph({
               children: textRuns,
               bullet: { level: 0 },
-              indent: { left: 360 }, 
+              indent: { left: 360 },
               style: 'NormalParaStyle',
-              spacing: { after: 80 } 
+              spacing: { after: 80 }
             })
           );
         } else {
           paragraphs.push(
             new Paragraph({
               children: textRuns,
-              style: 'NormalParaStyle', 
+              style: 'NormalParaStyle',
               spacing: { after: sectionTitle.toLowerCase() === 'experience' && !isFirstNonBulletInExperienceEntry ? 40 : 120 } // Tighter spacing after sub-lines in experience
             })
           );
@@ -119,15 +131,15 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
         // Regex to check for URL (simple version)
         const urlRegex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/i;
         const commonDomains = ['linkedin.com', 'github.com', 'portfolio', '.io', '.dev', '.me', '.tech', '.online', '.site', '.space', '.website'];
-        
+
         const isLikelyUrl = urlRegex.test(trimmedLine) || commonDomains.some(domain => trimmedLine.includes(domain));
 
-        if (emailRegex.test(trimmedLine)) { 
+        if (emailRegex.test(trimmedLine)) {
           paragraphChild = new ExternalHyperlink({
             children: [new TextRun({ text: trimmedLine, style: "Hyperlink" })],
             link: `mailto:${trimmedLine}`,
           });
-        } else if (isLikelyUrl) { 
+        } else if (isLikelyUrl) {
           const linkTarget = trimmedLine.startsWith('http://') || trimmedLine.startsWith('https://') ? trimmedLine : `https://${trimmedLine}`;
           paragraphChild = new ExternalHyperlink({
             children: [new TextRun({ text: trimmedLine, style: "Hyperlink" })],
@@ -215,7 +227,7 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
           name: "Name Style",
           basedOn: "Normal",
           next: "Normal",
-          run: { size: 40, bold: true, font: "Calibri" }, 
+          run: { size: 40, bold: true, font: "Calibri" },
           paragraph: { alignment: AlignmentType.CENTER, spacing: { after: 100 } },
         },
         {
@@ -223,7 +235,7 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
           name: "Title Style",
           basedOn: "Normal",
           next: "Normal",
-          run: { size: 28, font: "Calibri" }, 
+          run: { size: 28, font: "Calibri" },
           paragraph: { alignment: AlignmentType.CENTER, spacing: { after: 180 } },
         },
         {
@@ -231,7 +243,7 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
           name: "Contact Info Style",
           basedOn: "Normal",
           next: "Normal",
-          run: { font: "Calibri", size: 20 }, 
+          run: { font: "Calibri", size: 20 },
           paragraph: { alignment: AlignmentType.CENTER, spacing: { after: 40 } },
         },
         {
@@ -239,15 +251,16 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
           name: "Section Title Style",
           basedOn: "Normal",
           next: "Normal",
-          run: { size: 26, bold: true, font: "Calibri", color: "2E74B5" }, 
-          paragraph: { spacing: { before: 280, after: 140 }, border: { bottom: { color: "auto", space: 1, value: "single", size: 6 } } }, 
+          run: { size: 26, bold: true, font: "Calibri", color: "2E74B5" },
+          paragraph: { spacing: { before: 280, after: 140 } }, // Spacing remains inside paragraph options
+          border: { bottom: { color: "auto", space: 1, value: "single", size: 6 } } // Border is a separate property
         },
         {
           id: "SkillSubheadingStyle",
           name: "Skill Subheading",
           basedOn: "Normal",
           next: "Normal",
-          run: { size: 22, bold: true, font: "Calibri" }, 
+          run: { size: 22, bold: true, font: "Calibri" },
           paragraph: { spacing: { before: 100, after: 80 } },
         },
         {
@@ -256,8 +269,8 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
           basedOn: "Normal",
           next: "Normal",
           quickFormat: true,
-          run: { font: "Calibri", size: 22 }, 
-          paragraph: { spacing: { after: 120 } }, 
+          run: { font: "Calibri", size: 22 },
+          paragraph: { spacing: { after: 120 } },
         },
       ],
     },
@@ -265,7 +278,7 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
       properties: {
         page: {
           margin: {
-            top: 1080, 
+            top: 1080,
             right: 1080,
             bottom: 1080,
             left: 1080,
