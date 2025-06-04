@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { ChangeEvent } from 'react';
@@ -5,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { RotateCcw, Sparkles, Palette, Loader2 } from 'lucide-react';
+import { RotateCcw, Sparkles, Palette, Loader2, FileDown } from 'lucide-react';
 import type { TemplateKey } from '@/types/cv';
 
 interface CvFormProps {
@@ -15,7 +16,9 @@ interface CvFormProps {
   onTemplateChange: (template: TemplateKey) => void;
   onParse: () => void;
   onReset: () => void;
+  onDownloadDocx: () => void;
   isParsing: boolean;
+  isDownloadingDocx: boolean;
 }
 
 const templates: { key: TemplateKey; label: string }[] = [
@@ -31,7 +34,9 @@ export function CvForm({
   onTemplateChange,
   onParse,
   onReset,
+  onDownloadDocx,
   isParsing,
+  isDownloadingDocx,
 }: CvFormProps) {
   const handleTextChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     onCvTextChange(event.target.value);
@@ -85,6 +90,18 @@ export function CvForm({
             <Sparkles className="mr-2 h-4 w-4" />
           )}
           Generate Preview
+        </Button>
+        <Button 
+          onClick={onDownloadDocx} 
+          disabled={isDownloadingDocx || !cvText.trim()}
+          variant="outline"
+        >
+          {isDownloadingDocx ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <FileDown className="mr-2 h-4 w-4" />
+          )}
+          Download DOCX
         </Button>
         <Button variant="outline" onClick={onReset}>
           <RotateCcw className="mr-2 h-4 w-4" />

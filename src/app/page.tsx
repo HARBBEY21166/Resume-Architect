@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -5,6 +6,7 @@ import { AppHeader } from '@/components/app-header';
 import { CvForm } from '@/components/cv-form';
 import { CvPreviewCard } from '@/components/cv-preview-card';
 import { parseCV } from '@/ai/flows/ai-cv-parser';
+import { generateDocxForModernTemplate } from '@/lib/docx-generator';
 import type { ParsedCvData, TemplateKey } from '@/types/cv';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -42,6 +44,7 @@ export default function HomePage() {
   const [parsedData, setParsedData] = useState<ParsedCvData | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateKey>('modern');
   const [isParsing, setIsParsing] = useState<boolean>(false);
+  const [isDownloadingDocx, setIsDownloadingDocx] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -73,6 +76,29 @@ export default function HomePage() {
     }
   };
 
+  const handleDownloadDocx = async () => {
+    if (!parsedData) {
+      toast({ title: "Cannot Download", description: "Please parse the CV first to generate data.", variant: "destructive" });
+      return;
+    }
+    if (selectedTemplate !== 'modern') {
+      toast({ title: "Not Implemented", description: `DOCX download for '${selectedTemplate}' template is not yet implemented. Defaulting to Modern.`, variant: "default" });
+      // For now, we only have modern template for DOCX
+    }
+
+    setIsDownloadingDocx(true);
+    try {
+      await generateDocxForModernTemplate(parsedData); // We'll implement based on modern template first
+      toast({ title: "DOCX Generated", description: "Your CV has been downloaded." });
+    } catch (e) {
+      console.error("DOCX Generation error:", e);
+      const errorMessage = e instanceof Error ? e.message : "An unknown error occurred during DOCX generation.";
+      toast({ title: "DOCX Generation Failed", description: errorMessage, variant: "destructive" });
+    } finally {
+      setIsDownloadingDocx(false);
+    }
+  };
+
   const handleReset = () => {
     setCvText('');
     setParsedData(null);
@@ -94,7 +120,9 @@ export default function HomePage() {
               onTemplateChange={setSelectedTemplate}
               onParse={handleParseCv}
               onReset={handleReset}
+              onDownloadDocx={handleDownloadDocx}
               isParsing={isParsing}
+              isDownloadingDocx={isDownloadingDocx}
             />
             {error && (
                <Alert variant="destructive" className="mt-4">
