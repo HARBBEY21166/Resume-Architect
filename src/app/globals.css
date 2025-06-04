@@ -102,6 +102,18 @@
     display: none !important;
   }
 
+  /* Attempt to hide Next.js dev error overlay iframe if present */
+  iframe#webpack-dev-server-client-overlay {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+    position: absolute !important;
+    left: -9999px !important;
+    top: -9999px !important;
+  }
+
+
   /* Reset styles from layout components that wrap the CV preview */
   main,
   main > div, /* Grid container */
@@ -152,7 +164,7 @@
     padding: 0 !important;
     width: 100% !important; /* Take full width of #cv-preview-area */
     height: auto !important; /* Content height */
-    origin-top: unset !important; /* Reset transform origin */
+    transform-origin: top !important; 
     display: block !important; /* Ensure it behaves as a block */
   }
 
@@ -168,7 +180,6 @@
     box-shadow: none !important;
     border: none !important; 
     overflow: visible !important; /* Ensure content isn't clipped if it's longer */
-    /* display: block !important; */ /* Ensure it's a block for layout */
   }
 
   /* Ensure dark mode styles are overridden for print */
@@ -202,3 +213,5 @@
     resize: none !important;
   }
 }
+
+    
