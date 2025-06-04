@@ -8,7 +8,7 @@ export function AppHeader() {
         <div className="mr-4 flex items-center">
           <FileText className="h-6 w-6 mr-2 text-primary" />
           <a href="/" className="font-headline text-lg font-semibold text-primary">
-            CV-Genius
+            Resume Architect
           </a>
         </div>
         <div className="flex flex-1 items-center justify-end space-x-2">

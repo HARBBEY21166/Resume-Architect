@@ -157,7 +157,7 @@ export default function HomePage() {
         </div>
       </main>
       <footer className="text-center py-4 text-sm text-muted-foreground no-print">
-        © {new Date().getFullYear()} CV-Genius. All rights reserved.
+        © {new Date().getFullYear()} Resume Architect. All rights reserved.
       </footer>
     </div>
   );

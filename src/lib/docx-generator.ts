@@ -30,7 +30,16 @@ const createSection = (
         if (sectionTitle.toLowerCase() === 'experience') {
           isFirstNonBulletInExperienceEntry = true;
         }
-        paragraphs.push(new Paragraph({ text: '', style: 'NormalParaStyle' })); 
+        // Add an empty paragraph for spacing, but ensure it doesn't get unintended styling
+        const emptyPara = new Paragraph({ text: '', style: 'NormalParaStyle' });
+        if (paragraphs.length > 0) {
+            const lastPara = paragraphs[paragraphs.length - 1];
+            // Avoid excessive spacing if the last para was already a section title or specific styled para.
+            if (!lastPara.Style?.startsWith('SectionTitle')) {
+                 emptyPara. زيادةSpacing({before: 80, after: 80});
+            }
+        }
+        paragraphs.push(emptyPara);
         continue;
       }
 
@@ -42,6 +51,11 @@ const createSection = (
         continue;
       }
       if (!textContentForRun.trim() && !isBullet) { 
+        // Allow empty lines to pass through as paragraph spacing if intended by user input
+         paragraphs.push(new Paragraph({ text: '', style: 'NormalParaStyle', spacing: {after: 120} }));
+        if (sectionTitle.toLowerCase() === 'experience') {
+             isFirstNonBulletInExperienceEntry = true; // Reset for next potential job entry
+        }
         continue;
       }
 
@@ -50,17 +64,18 @@ const createSection = (
       if (sectionTitle.toLowerCase() === 'experience') {
         if (!isBullet) {
           if (isFirstNonBulletInExperienceEntry) {
-            textRuns.push(new TextRun({ text: textContentForRun, bold: true }));
+            textRuns.push(new TextRun({ text: textContentForRun, bold: true, font: "Calibri", size: 22 }));
             isFirstNonBulletInExperienceEntry = false; 
           } else {
-            textRuns.push(new TextRun({ text: textContentForRun })); 
+            textRuns.push(new TextRun({ text: textContentForRun, font: "Calibri", size: 22 })); 
           }
         } else { 
-          textRuns.push(new TextRun({ text: textContentForRun }));
-          isFirstNonBulletInExperienceEntry = true;
+          textRuns.push(new TextRun({ text: textContentForRun, font: "Calibri", size: 22 }));
+          // After a bullet point, the next non-bullet line should be considered a new entry header
+          isFirstNonBulletInExperienceEntry = true; 
         }
       } else { 
-        textRuns.push(new TextRun({ text: textContentForRun }));
+        textRuns.push(new TextRun({ text: textContentForRun, font: "Calibri", size: 22 }));
       }
 
       if (textRuns.length > 0) {
@@ -79,6 +94,7 @@ const createSection = (
             new Paragraph({
               children: textRuns,
               style: 'NormalParaStyle', 
+              spacing: { after: sectionTitle.toLowerCase() === 'experience' && !isFirstNonBulletInExperienceEntry ? 40 : 120 } // Tighter spacing after sub-lines in experience
             })
           );
         }
@@ -98,21 +114,26 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
       const trimmedLine = line.trim();
       if (trimmedLine) {
         let paragraphChild;
-        if (trimmedLine.includes('@') && !trimmedLine.includes(' ')) { // Basic email check
+        // Regex to check for email (simple version)
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        // Regex to check for URL (simple version)
+        const urlRegex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/i;
+        const commonDomains = ['linkedin.com', 'github.com', 'portfolio', '.io', '.dev', '.me', '.tech', '.online', '.site', '.space', '.website'];
+        
+        const isLikelyUrl = urlRegex.test(trimmedLine) || commonDomains.some(domain => trimmedLine.includes(domain));
+
+        if (emailRegex.test(trimmedLine)) { 
           paragraphChild = new ExternalHyperlink({
             children: [new TextRun({ text: trimmedLine, style: "Hyperlink" })],
             link: `mailto:${trimmedLine}`,
           });
-        } else if (trimmedLine.startsWith('http') || trimmedLine.startsWith('www.') || 
-                   trimmedLine.includes('.com') || trimmedLine.includes('.org') || trimmedLine.includes('.net') ||
-                   trimmedLine.includes('linkedin.com') || trimmedLine.includes('github.com')) { // Basic URL check
-          const linkTarget = trimmedLine.startsWith('http') ? trimmedLine : `https://${trimmedLine}`;
+        } else if (isLikelyUrl) { 
+          const linkTarget = trimmedLine.startsWith('http://') || trimmedLine.startsWith('https://') ? trimmedLine : `https://${trimmedLine}`;
           paragraphChild = new ExternalHyperlink({
             children: [new TextRun({ text: trimmedLine, style: "Hyperlink" })],
             link: linkTarget,
           });
         } else {
-          // For other contact info like phone or address
           paragraphChild = new TextRun(trimmedLine);
         }
         contactParagraphs.push(new Paragraph({ children: [paragraphChild], style: "ContactInfoStyle" }));
@@ -170,9 +191,9 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
 
 
   const doc = new Document({
-    creator: "CV-Genius",
-    title: `${name || 'CV'} - Modern Template`,
-    description: "Curriculum Vitae generated by CV-Genius",
+    creator: "Resume Architect",
+    title: `${name || 'CV'} - Modern Template by Resume Architect`,
+    description: "Curriculum Vitae generated by Resume Architect",
     styles: {
       characterStyles: [
         {
@@ -218,8 +239,8 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
           name: "Section Title Style",
           basedOn: "Normal",
           next: "Normal",
-          run: { size: 26, bold: true, font: "Calibri", color: "2E74B5" }, // Using a Word-friendly blue
-          paragraph: { spacing: { before: 280, after: 140 } }, 
+          run: { size: 26, bold: true, font: "Calibri", color: "2E74B5" }, 
+          paragraph: { spacing: { before: 280, after: 140 }, border: { bottom: { color: "auto", space: 1, value: "single", size: 6 } } }, 
         },
         {
           id: "SkillSubheadingStyle",
