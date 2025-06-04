@@ -42,7 +42,6 @@ export default function HomePage() {
   const [parsedData, setParsedData] = useState<ParsedCvData | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateKey>('modern');
   const [isParsing, setIsParsing] = useState<boolean>(false);
-  const [isDownloading, setIsDownloading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -82,38 +81,6 @@ export default function HomePage() {
     toast({ title: "Form Cleared", description: "Input and preview have been reset." });
   };
 
-  const handleDownloadPdf = () => {
-    if (!parsedData && !cvText.trim()) {
-       toast({ title: "Cannot Download", description: "Please enter or parse your CV first.", variant: "destructive" });
-       return;
-    }
-    setIsDownloading(true);
-    // Ensure preview is rendered with current data before printing
-    // If parsedData is null but cvText exists, we can try parsing first or just use placeholder.
-    // For simplicity, let's assume parsing must happen before download or it uses placeholder.
-    if(!parsedData && cvText.trim()){
-        toast({ title: "Parsing before Download", description: "Please generate preview first to ensure latest data is downloaded."});
-        setIsDownloading(false);
-        handleParseCv(); // Trigger parse if not already parsed
-        return; 
-    }
-
-
-    // Brief timeout to allow UI to update if necessary (e.g. spinner)
-    setTimeout(() => {
-      try {
-        window.print();
-        toast({ title: "PDF Download", description: "Your CV is being prepared for download. Please use your browser's print to PDF option." });
-      } catch (printError) {
-        console.error("Print error:", printError);
-        toast({ title: "Download Error", description: "Could not initiate PDF download.", variant: "destructive" });
-      } finally {
-        setIsDownloading(false);
-      }
-    }, 100);
-  };
-
-
   return (
     <div className="flex flex-col min-h-screen">
       <AppHeader />
@@ -127,9 +94,7 @@ export default function HomePage() {
               onTemplateChange={setSelectedTemplate}
               onParse={handleParseCv}
               onReset={handleReset}
-              onDownload={handleDownloadPdf}
               isParsing={isParsing}
-              isDownloading={isDownloading}
             />
             {error && (
                <Alert variant="destructive" className="mt-4">

@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { RotateCcw, Sparkles, Palette, DownloadCloud, Loader2 } from 'lucide-react';
+import { RotateCcw, Sparkles, Palette, Loader2 } from 'lucide-react';
 import type { TemplateKey } from '@/types/cv';
 
 interface CvFormProps {
@@ -15,9 +15,7 @@ interface CvFormProps {
   onTemplateChange: (template: TemplateKey) => void;
   onParse: () => void;
   onReset: () => void;
-  onDownload: () => void;
   isParsing: boolean;
-  isDownloading: boolean;
 }
 
 const templates: { key: TemplateKey; label: string }[] = [
@@ -33,9 +31,7 @@ export function CvForm({
   onTemplateChange,
   onParse,
   onReset,
-  onDownload,
   isParsing,
-  isDownloading,
 }: CvFormProps) {
   const handleTextChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     onCvTextChange(event.target.value);
@@ -89,14 +85,6 @@ export function CvForm({
             <Sparkles className="mr-2 h-4 w-4" />
           )}
           Generate Preview
-        </Button>
-        <Button onClick={onDownload} disabled={isDownloading || !cvText.trim()}>
-          {isDownloading ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <DownloadCloud className="mr-2 h-4 w-4" />
-          )}
-          Download PDF
         </Button>
         <Button variant="outline" onClick={onReset}>
           <RotateCcw className="mr-2 h-4 w-4" />
