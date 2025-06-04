@@ -1,6 +1,6 @@
 
 import type { ParsedCvData } from '@/types/cv';
-import { Mail, Phone, Link as LinkIcon, UserRound, Briefcase, GraduationCap, Lightbulb, Award, Smile } from 'lucide-react'; // Added icons
+import { Mail, Phone, Link as LinkIcon, UserRound, Briefcase, GraduationCap, Lightbulb, Award, Smile } from 'lucide-react';
 
 interface ClassicTemplateProps {
   data: ParsedCvData;
@@ -38,7 +38,7 @@ export function ClassicTemplate({ data }: ClassicTemplateProps) {
           <hr className="my-6 border-border" />
           <section className="mb-6 text-center">
             <h2 className="font-headline text-xl font-semibold text-accent mb-2 tracking-wide">OBJECTIVE</h2>
-            <div className="text-sm" dangerouslySetInnerHTML={{ __html: objective?.replace(/\n/g, '<br />') || 'Your career objective...' }} />
+            <div className="text-sm text-center" dangerouslySetInnerHTML={{ __html: objective?.replace(/\n/g, '<br />') || 'Your career objective...' }} />
           </section>
         </>
       )}
@@ -47,14 +47,14 @@ export function ClassicTemplate({ data }: ClassicTemplateProps) {
 
       <section className="mb-6 text-center">
         <h2 className="font-headline text-xl font-semibold text-accent mb-2 tracking-wide">EXPERIENCE</h2>
-        <div className="space-y-3 text-sm" dangerouslySetInnerHTML={{ __html: experience?.replace(/\n/g, '<br />') || 'Your professional experience...' }} />
+        <div className="space-y-3 text-sm text-center" dangerouslySetInnerHTML={{ __html: experience?.replace(/\n/g, '<br />') || 'Your professional experience...' }} />
       </section>
 
       <hr className="my-6 border-border" />
 
       <section className="mb-6 text-center">
         <h2 className="font-headline text-xl font-semibold text-accent mb-2 tracking-wide">EDUCATION</h2>
-        <div className="space-y-1 text-sm" dangerouslySetInnerHTML={{ __html: education?.replace(/\n/g, '<br />') || 'Your educational background...' }} />
+        <div className="space-y-1 text-sm text-center" dangerouslySetInnerHTML={{ __html: education?.replace(/\n/g, '<br />') || 'Your educational background...' }} />
       </section>
 
       {(technicalSkills || personalSkills) && (
@@ -62,7 +62,7 @@ export function ClassicTemplate({ data }: ClassicTemplateProps) {
           <hr className="my-6 border-border" />
           <section className="mb-6 text-center">
             <h2 className="font-headline text-xl font-semibold text-accent mb-2 tracking-wide">SKILLS</h2>
-            <div className="text-sm" dangerouslySetInnerHTML={{ __html: skillsContent?.replace(/\n/g, '<br />') || 'Your key skills...' }} />
+            <div className="text-sm text-center" dangerouslySetInnerHTML={{ __html: skillsContent?.replace(/\n/g, '<br />') || 'Your key skills...' }} />
           </section>
         </>
       )}
@@ -72,7 +72,7 @@ export function ClassicTemplate({ data }: ClassicTemplateProps) {
           <hr className="my-6 border-border" />
           <section className="mb-6 text-center">
             <h2 className="font-headline text-xl font-semibold text-accent mb-2 tracking-wide">CERTIFICATIONS</h2>
-            <div className="text-sm" dangerouslySetInnerHTML={{ __html: certifications?.replace(/\n/g, '<br />') || 'Your certifications...' }} />
+            <div className="text-sm text-center" dangerouslySetInnerHTML={{ __html: certifications?.replace(/\n/g, '<br />') || 'Your certifications...' }} />
           </section>
         </>
       )}
@@ -82,7 +82,7 @@ export function ClassicTemplate({ data }: ClassicTemplateProps) {
           <hr className="my-6 border-border" />
           <section className="text-center">
             <h2 className="font-headline text-xl font-semibold text-accent mb-2 tracking-wide">INTERESTS</h2>
-            <div className="text-sm" dangerouslySetInnerHTML={{ __html: interest?.replace(/\n/g, '<br />') || 'Your interests...' }} />
+            <div className="text-sm text-center" dangerouslySetInnerHTML={{ __html: interest?.replace(/\n/g, '<br />') || 'Your interests...' }} />
           </section>
         </>
       )}
