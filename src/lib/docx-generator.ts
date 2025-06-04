@@ -1,5 +1,5 @@
 
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, PageNumberFormat, SectionType, PageOrientation, convertInchesToTwip } from 'docx';
 import { saveAs } from 'file-saver';
 import type { ParsedCvData } from '@/types/cv';
 
@@ -14,24 +14,28 @@ const createSection = (
       new Paragraph({
         text: sectionTitle,
         heading: headingLevel,
-        // Spacing for heading is primarily controlled by its style definition (e.g., Heading3)
+        style: "SectionTitleStyle", 
       })
     );
   }
   if (content) {
     const lines = content.split('\n');
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      if (line.trim()) {
-        const isBullet = line.trim().startsWith('- ') || line.trim().startsWith('* ');
-        const textContent = isBullet ? line.substring(line.indexOf(' ') + 1).trim() : line.trim();
-        
+      let line = lines[i];
+      // Remove leading/trailing whitespace for processing, but preserve internal spaces
+      const trimmedLine = line.trimStart(); 
+      
+      if (trimmedLine) { // Process non-empty lines
+        const isBullet = trimmedLine.startsWith('- ') || trimmedLine.startsWith('* ');
+        // For bullet points, remove the bullet character and trim leading space from the content
+        const textContent = isBullet ? trimmedLine.substring(trimmedLine.indexOf(' ') + 1).trimStart() : line; // Use original line for non-bullets to preserve indentation
+
         const textRuns = [];
         // Special handling for Experience section to bold titles/company lines
-        if (sectionTitle.toLowerCase() === 'experience' && !isBullet && textContent) {
-          textRuns.push(new TextRun({ text: textContent, bold: true }));
-        } else if (textContent) {
-          textRuns.push(new TextRun(textContent));
+        if (sectionTitle.toLowerCase() === 'experience' && !isBullet && textContent.trim()) {
+          textRuns.push(new TextRun({ text: textContent.trimEnd(), bold: true })); // Trim end for bolded lines
+        } else if (textContent.trim()) { // Ensure non-empty content after processing
+          textRuns.push(new TextRun(textContent.trimEnd())); // Trim end for regular lines
         } else {
           // Handle cases where textContent might be empty after trimming, to avoid empty TextRun
           continue;
@@ -42,41 +46,93 @@ const createSection = (
             new Paragraph({
               children: textRuns,
               bullet: { level: 0 },
-              indent: { left: 720 }, // 0.5 inch indent
-              spacing: { after: 80 }, // Spacing after bullet items
-              style: 'normalPara', // Apply base font style
+              indent: { left: convertInchesToTwip(0.5) }, 
+              style: 'NormalParaStyle', 
             })
           );
         } else {
           paragraphs.push(
             new Paragraph({
               children: textRuns,
-              // Spacing after regular paragraphs is controlled by 'normalPara' style (100)
-              // or by the specific line if it's an experience title (which is a normalPara too)
-              style: 'normalPara',
+              style: 'NormalParaStyle', 
             })
           );
         }
+      } else { 
+        // If the original line was just whitespace but not completely empty, create a blank paragraph
+        // This helps preserve intentional blank lines from the AI output.
+         if (line.length > 0 && !line.trim()) {
+            paragraphs.push(new Paragraph({style: 'NormalParaStyle'}));
+         }
       }
     }
   }
-  // Add a bit more space after a section if it had content, before the next section starts
-  // This is primarily handled by the 'before' spacing of the next Heading3
   return paragraphs;
 };
 
 
 export async function generateDocxForModernTemplate(data: ParsedCvData): Promise<void> {
-  const { name, contactInformation, objective, experience, technicalSkills, personalSkills, education, certifications, interest } = data;
+  const { name, title, contactInformation, objective, experience, technicalSkills, personalSkills, education, certifications, interest } = data;
 
-  const email = contactInformation.match(/[\w.-]+@[\w.-]+\.\w+/)?.[0];
-  const phone = contactInformation.match(/(\(\d{3}\)\s*\d{3}-\d{4}|\d{3}-\d{3}-\d{4}|\d{10})/)?.[0];
-  const linkedIn = contactInformation.match(/linkedin\.com\/in\/[\w-]+/)?.[0];
+  const contactParagraphs: Paragraph[] = [];
+  if (contactInformation) {
+    contactInformation.split('\n').forEach(line => {
+      if (line.trim()) {
+        contactParagraphs.push(new Paragraph({ text: line.trim(), style: "ContactInfoStyle" }));
+      }
+    });
+  }
+  
+  const children = [
+    new Paragraph({
+      text: name || "Your Name",
+      style: "NameStyle",
+    }),
+  ];
 
-  const contactParts: string[] = [];
-  if (email) contactParts.push(email);
-  if (phone) contactParts.push(phone);
-  if (linkedIn) contactParts.push(linkedIn);
+  if (title) {
+    children.push(new Paragraph({
+      text: title,
+      style: "TitleStyle",
+    }));
+  }
+
+  children.push(...contactParagraphs);
+  
+  // Add a small manual space after contact info before the first section
+  children.push(new Paragraph({ style: "NormalParaStyle", spacing: { before: 100 } }));
+
+
+  if (objective) children.push(...createSection("Objective", objective, HeadingLevel.HEADING_3));
+  if (experience) children.push(...createSection("Experience", experience, HeadingLevel.HEADING_3));
+  if (education) children.push(...createSection("Education", education, HeadingLevel.HEADING_3));
+  
+  const skillsParagraphs: Paragraph[] = [];
+  if (technicalSkills || personalSkills) {
+     skillsParagraphs.push(
+        new Paragraph({
+          text: "Skills",
+          heading: HeadingLevel.HEADING_3,
+          style: "SectionTitleStyle",
+        })
+      );
+    if (technicalSkills) {
+        skillsParagraphs.push(new Paragraph({ text: "Technical:", style: "SkillSubheadingStyle" }));
+        technicalSkills.split('\n').forEach(line => {
+            if (line.trim()) skillsParagraphs.push(new Paragraph({ text: line.trim(), style: "NormalParaStyle" }));
+        });
+    }
+    if (personalSkills) {
+        skillsParagraphs.push(new Paragraph({ text: "Personal:", style: "SkillSubheadingStyle" }));
+        personalSkills.split('\n').forEach(line => {
+            if (line.trim()) skillsParagraphs.push(new Paragraph({ text: line.trim(), style: "NormalParaStyle" }));
+        });
+    }
+    children.push(...skillsParagraphs);
+  }
+
+  if (certifications) children.push(...createSection("Certifications", certifications, HeadingLevel.HEADING_3));
+  if (interest) children.push(...createSection("Interests", interest, HeadingLevel.HEADING_3));
 
 
   const doc = new Document({
@@ -84,75 +140,81 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
     title: `${name || 'CV'} - Modern Template`,
     description: "Curriculum Vitae generated by CV-Genius",
     styles: {
-      default: {
-        heading1: {
-          run: { size: 48, bold: true, font: "Calibri" }, // 24pt
-          paragraph: { alignment: AlignmentType.CENTER, spacing: { after: 200, before: 0 } },
-        },
-        // heading2 is not currently used but defined for completeness
-        heading2: {
-          run: { size: 32, bold: true, font: "Calibri" }, // 16pt
-          paragraph: { spacing: { before: 300, after: 150 } },
-        },
-        heading3: { // Used for section titles like Objective, Experience
-            run: { size: 28, bold: true, font: "Calibri", color: "4F81BD" }, // 14pt, Accent color
-            paragraph: { spacing: { before: 300, after: 150 } }, // Increased spacing around section titles
-        },
-      },
       paragraphStyles: [
         {
-          id: "normalPara",
-          name: "Normal Para",
+          id: "NameStyle",
+          name: "Name Style",
           basedOn: "Normal",
           next: "Normal",
-          quickFormat: true,
-          run: { font: "Calibri", size: 22 }, // 11pt
-          paragraph: { spacing: { after: 100, before: 0 } }, // Default spacing after paragraphs
+          run: { size: convertInchesToTwip(24 / 72), bold: true, font: "Calibri" }, // 24pt
+          paragraph: { alignment: AlignmentType.CENTER, spacing: { after: convertInchesToTwip(0.05) } },
         },
         {
-          id: "contactInfo",
-          name: "Contact Info",
+          id: "TitleStyle",
+          name: "Title Style",
+          basedOn: "Normal",
+          next: "Normal",
+          run: { size: convertInchesToTwip(14 / 72), font: "Calibri" }, // 14pt
+          paragraph: { alignment: AlignmentType.CENTER, spacing: { after: convertInchesToTwip(0.1) } },
+        },
+        {
+          id: "ContactInfoStyle",
+          name: "Contact Info Style",
+          basedOn: "Normal",
+          next: "Normal",
+          run: { font: "Calibri", size: convertInchesToTwip(10 / 72) }, // 10pt
+          paragraph: { alignment: AlignmentType.CENTER, spacing: { after: convertInchesToTwip(0.02) } }, // Minimal spacing between contact lines
+        },
+        {
+          id: "SectionTitleStyle", // HEADING_3 will map to this
+          name: "Section Title Style",
+          basedOn: "Normal",
+          next: "Normal",
+          run: { size: convertInchesToTwip(14 / 72), bold: true, font: "Calibri", color: "4F81BD" }, // 14pt, Accent color like "Modern"
+          paragraph: { spacing: { before: convertInchesToTwip(0.2), after: convertInchesToTwip(0.1) } }, // Spacing around section titles
+        },
+        {
+          id: "SkillSubheadingStyle",
+          name: "Skill Subheading",
+          basedOn: "Normal",
+          next: "Normal",
+          run: { size: convertInchesToTwip(11 / 72), bold: true, font: "Calibri" }, // 11pt bold
+          paragraph: { spacing: { before: convertInchesToTwip(0.05), after: convertInchesToTwip(0.05) } },
+        },
+        {
+          id: "NormalParaStyle",
+          name: "Normal Para Style",
           basedOn: "Normal",
           next: "Normal",
           quickFormat: true,
-          run: { font: "Calibri", size: 20 }, // 10pt
-          paragraph: { alignment: AlignmentType.CENTER, spacing: { after: 240, before: 0 } }, // Spacing after contact block
-        }
+          run: { font: "Calibri", size: convertInchesToTwip(11 / 72) }, // 11pt
+          paragraph: { spacing: { after: convertInchesToTwip(0.07) } }, // Default spacing after paragraphs (approx 5pt)
+        },
       ],
     },
     sections: [{
       properties: {
         page: {
           margin: {
-            top: 720, // 0.5 inch
-            right: 720,
-            bottom: 720,
-            left: 720,
+            top: convertInchesToTwip(0.75), 
+            right: convertInchesToTwip(0.75),
+            bottom: convertInchesToTwip(0.75),
+            left: convertInchesToTwip(0.75),
           },
         },
       },
-      children: [
-        new Paragraph({
-          text: name || "Your Name",
-          heading: HeadingLevel.HEADING_1,
-          // Alignment and spacing are part of heading1 style
-        }),
-        new Paragraph({
-          text: contactParts.join(' | '),
-          style: 'contactInfo',
-          // Alignment and spacing are part of contactInfo style
-        }),
-        ...(objective ? createSection("Objective", objective, HeadingLevel.HEADING_3) : []),
-        ...(experience ? createSection("Experience", experience, HeadingLevel.HEADING_3) : []),
-        ...(education ? createSection("Education", education, HeadingLevel.HEADING_3) : []),
-        ...(technicalSkills ? createSection("Technical Skills", technicalSkills, HeadingLevel.HEADING_3) : []),
-        ...(personalSkills ? createSection("Personal Skills", personalSkills, HeadingLevel.HEADING_3) : []),
-        ...(certifications ? createSection("Certifications", certifications, HeadingLevel.HEADING_3) : []),
-        ...(interest ? createSection("Interests", interest, HeadingLevel.HEADING_3) : []),
-      ],
+      children: children,
     }],
   });
 
   const blob = await Packer.toBlob(doc);
   saveAs(blob, `${(name || 'CV').replace(/\s+/g, '_')}_Modern.docx`);
 }
+
+// Helper to convert points to Twips (1 point = 20 twips)
+// However, docx.js `size` property for runs seems to expect half-points.
+// So, size: 22 means 11pt.
+// For margins etc, using convertInchesToTwip is more reliable.
+// The library's direct use of point sizes (e.g., size: 48 for 24pt) is what we'll use for fonts.
+// The createSection uses HeadingLevel, which then needs to be mapped to a style.
+// In this setup, HEADING_3 is implicitly styled by "SectionTitleStyle".
