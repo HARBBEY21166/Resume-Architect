@@ -1,19 +1,18 @@
 
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, PageNumberFormat, SectionType, PageOrientation, convertInchesToTwip } from 'docx';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, SectionType, PageOrientation, convertInchesToTwip } from 'docx';
 import { saveAs } from 'file-saver';
 import type { ParsedCvData } from '@/types/cv';
 
 const createSection = (
   sectionTitle: string,
   content: string | undefined | null,
-  headingLevel: HeadingLevel
+  headingLevel: HeadingLevel // Retained for semantic mapping, though styling is direct
 ): Paragraph[] => {
   const paragraphs: Paragraph[] = [];
   if (sectionTitle) {
     paragraphs.push(
       new Paragraph({
         text: sectionTitle,
-        heading: headingLevel,
         style: "SectionTitleStyle", 
       })
     );
@@ -22,22 +21,19 @@ const createSection = (
     const lines = content.split('\n');
     for (let i = 0; i < lines.length; i++) {
       let line = lines[i];
-      // Remove leading/trailing whitespace for processing, but preserve internal spaces
       const trimmedLine = line.trimStart(); 
       
-      if (trimmedLine) { // Process non-empty lines
+      if (trimmedLine) {
         const isBullet = trimmedLine.startsWith('- ') || trimmedLine.startsWith('* ');
-        // For bullet points, remove the bullet character and trim leading space from the content
-        const textContent = isBullet ? trimmedLine.substring(trimmedLine.indexOf(' ') + 1).trimStart() : line; // Use original line for non-bullets to preserve indentation
+        const textContent = isBullet ? trimmedLine.substring(trimmedLine.indexOf(' ') + 1).trimStart() : line;
 
         const textRuns = [];
         // Special handling for Experience section to bold titles/company lines
         if (sectionTitle.toLowerCase() === 'experience' && !isBullet && textContent.trim()) {
-          textRuns.push(new TextRun({ text: textContent.trimEnd(), bold: true })); // Trim end for bolded lines
-        } else if (textContent.trim()) { // Ensure non-empty content after processing
-          textRuns.push(new TextRun(textContent.trimEnd())); // Trim end for regular lines
+          textRuns.push(new TextRun({ text: textContent.trimEnd(), bold: true }));
+        } else if (textContent.trim()) {
+          textRuns.push(new TextRun(textContent.trimEnd()));
         } else {
-          // Handle cases where textContent might be empty after trimming, to avoid empty TextRun
           continue;
         }
 
@@ -46,8 +42,9 @@ const createSection = (
             new Paragraph({
               children: textRuns,
               bullet: { level: 0 },
-              indent: { left: convertInchesToTwip(0.5) }, 
+              indent: { left: convertInchesToTwip(0.25) }, // Standard bullet indent
               style: 'NormalParaStyle', 
+              spacing: { after: convertInchesToTwip(0.05) } // Small space after bullet items
             })
           );
         } else {
@@ -59,13 +56,15 @@ const createSection = (
           );
         }
       } else { 
-        // If the original line was just whitespace but not completely empty, create a blank paragraph
-        // This helps preserve intentional blank lines from the AI output.
          if (line.length > 0 && !line.trim()) {
             paragraphs.push(new Paragraph({style: 'NormalParaStyle'}));
          }
       }
     }
+  }
+  // Add a bit more space after a section before the next one starts
+  if (paragraphs.length > 0) {
+    paragraphs[paragraphs.length -1]. زيادةSpacing({ after: convertInchesToTwip(0.15) });
   }
   return paragraphs;
 };
@@ -99,8 +98,7 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
 
   children.push(...contactParagraphs);
   
-  // Add a small manual space after contact info before the first section
-  children.push(new Paragraph({ style: "NormalParaStyle", spacing: { before: 100 } }));
+  children.push(new Paragraph({ style: "NormalParaStyle", spacing: { before: convertInchesToTwip(0.1) } }));
 
 
   if (objective) children.push(...createSection("Objective", objective, HeadingLevel.HEADING_3));
@@ -112,7 +110,6 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
      skillsParagraphs.push(
         new Paragraph({
           text: "Skills",
-          heading: HeadingLevel.HEADING_3,
           style: "SectionTitleStyle",
         })
       );
@@ -127,6 +124,9 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
         personalSkills.split('\n').forEach(line => {
             if (line.trim()) skillsParagraphs.push(new Paragraph({ text: line.trim(), style: "NormalParaStyle" }));
         });
+    }
+     if (skillsParagraphs.length > 1) { // Check if any skill content was added
+        skillsParagraphs[skillsParagraphs.length -1].เพิ่มSpacing({ after: convertInchesToTwip(0.15) });
     }
     children.push(...skillsParagraphs);
   }
@@ -146,7 +146,7 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
           name: "Name Style",
           basedOn: "Normal",
           next: "Normal",
-          run: { size: convertInchesToTwip(24 / 72), bold: true, font: "Calibri" }, // 24pt
+          run: { size: 44, bold: true, font: "Calibri" }, // 22pt
           paragraph: { alignment: AlignmentType.CENTER, spacing: { after: convertInchesToTwip(0.05) } },
         },
         {
@@ -154,7 +154,7 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
           name: "Title Style",
           basedOn: "Normal",
           next: "Normal",
-          run: { size: convertInchesToTwip(14 / 72), font: "Calibri" }, // 14pt
+          run: { size: 28, font: "Calibri" }, // 14pt
           paragraph: { alignment: AlignmentType.CENTER, spacing: { after: convertInchesToTwip(0.1) } },
         },
         {
@@ -162,23 +162,23 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
           name: "Contact Info Style",
           basedOn: "Normal",
           next: "Normal",
-          run: { font: "Calibri", size: convertInchesToTwip(10 / 72) }, // 10pt
-          paragraph: { alignment: AlignmentType.CENTER, spacing: { after: convertInchesToTwip(0.02) } }, // Minimal spacing between contact lines
+          run: { font: "Calibri", size: 20 }, // 10pt
+          paragraph: { alignment: AlignmentType.CENTER, spacing: { after: convertInchesToTwip(0.02) } },
         },
         {
-          id: "SectionTitleStyle", // HEADING_3 will map to this
+          id: "SectionTitleStyle",
           name: "Section Title Style",
           basedOn: "Normal",
           next: "Normal",
-          run: { size: convertInchesToTwip(14 / 72), bold: true, font: "Calibri", color: "4F81BD" }, // 14pt, Accent color like "Modern"
-          paragraph: { spacing: { before: convertInchesToTwip(0.2), after: convertInchesToTwip(0.1) } }, // Spacing around section titles
+          run: { size: 24, bold: true, font: "Calibri", color: "4F81BD" }, // 12pt, Accent color
+          paragraph: { spacing: { before: convertInchesToTwip(0.2), after: convertInchesToTwip(0.1) } },
         },
         {
           id: "SkillSubheadingStyle",
           name: "Skill Subheading",
           basedOn: "Normal",
           next: "Normal",
-          run: { size: convertInchesToTwip(11 / 72), bold: true, font: "Calibri" }, // 11pt bold
+          run: { size: 22, bold: true, font: "Calibri" }, // 11pt bold
           paragraph: { spacing: { before: convertInchesToTwip(0.05), after: convertInchesToTwip(0.05) } },
         },
         {
@@ -187,8 +187,8 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
           basedOn: "Normal",
           next: "Normal",
           quickFormat: true,
-          run: { font: "Calibri", size: convertInchesToTwip(11 / 72) }, // 11pt
-          paragraph: { spacing: { after: convertInchesToTwip(0.07) } }, // Default spacing after paragraphs (approx 5pt)
+          run: { font: "Calibri", size: 22 }, // 11pt
+          paragraph: { spacing: { after: convertInchesToTwip(0.07) } },
         },
       ],
     },
@@ -211,10 +211,18 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
   saveAs(blob, `${(name || 'CV').replace(/\s+/g, '_')}_Modern.docx`);
 }
 
-// Helper to convert points to Twips (1 point = 20 twips)
-// However, docx.js `size` property for runs seems to expect half-points.
-// So, size: 22 means 11pt.
-// For margins etc, using convertInchesToTwip is more reliable.
-// The library's direct use of point sizes (e.g., size: 48 for 24pt) is what we'll use for fonts.
-// The createSection uses HeadingLevel, which then needs to be mapped to a style.
-// In this setup, HEADING_3 is implicitly styled by "SectionTitleStyle".
+// Helper for Paragraph to add spacing - a bit of a workaround since direct modification isn't straightforward
+interface ParagraphWithSpacing extends Paragraph {
+    เพิ่มSpacing?(spacingOptions: { after?: number; before?: number }): void;
+}
+
+Paragraph.prototype.เพิ่มSpacing = function(spacingOptions: { after?: number; before?: number }) {
+    const currentSpacing = this.properties.spacing || {};
+    if (spacingOptions.after !== undefined) {
+        currentSpacing.after = (currentSpacing.after || 0) + spacingOptions.after;
+    }
+    if (spacingOptions.before !== undefined) {
+        currentSpacing.before = (currentSpacing.before || 0) + spacingOptions.before;
+    }
+    this.properties.spacing = currentSpacing;
+};
