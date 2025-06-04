@@ -79,13 +79,6 @@ export default function HomePage() {
     setCvText(EXAMPLE_CV);
   }, []);
 
-  // Expose parsedData to CvForm for disabling download buttons
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      (window as any).__parsedDataForCvForm = parsedData;
-    }
-  }, [parsedData]);
-
   const handleParseCv = async () => {
     if (!cvText.trim()) {
       setError("CV text cannot be empty.");
@@ -197,6 +190,7 @@ export default function HomePage() {
               isParsing={isParsing}
               isDownloadingDocx={isDownloadingDocx}
               isDownloadingPdf={isDownloadingPdf}
+              isPreviewAvailable={!!parsedData} // Pass the availability state
             />
             {error && (
                <Alert variant="destructive" className="mt-4">

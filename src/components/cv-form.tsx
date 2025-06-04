@@ -17,10 +17,11 @@ interface CvFormProps {
   onParse: () => void;
   onReset: () => void;
   onDownloadDocx: () => void;
-  onDownloadPdf: () => void; // New prop
+  onDownloadPdf: () => void;
   isParsing: boolean;
   isDownloadingDocx: boolean;
-  isDownloadingPdf: boolean; // New prop
+  isDownloadingPdf: boolean;
+  isPreviewAvailable: boolean; // Added prop
 }
 
 const templates: { key: TemplateKey; label: string }[] = [
@@ -41,6 +42,7 @@ export function CvForm({
   isParsing,
   isDownloadingDocx,
   isDownloadingPdf,
+  isPreviewAvailable, // Use this prop
 }: CvFormProps) {
   const handleTextChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     onCvTextChange(event.target.value);
@@ -97,7 +99,7 @@ export function CvForm({
         </Button>
         <Button
           onClick={onDownloadDocx}
-          disabled={isDownloadingDocx || !cvText.trim() || !parsedData}
+          disabled={isDownloadingDocx || !cvText.trim() || !isPreviewAvailable}
           variant="outline"
         >
           {isDownloadingDocx ? (
@@ -109,7 +111,7 @@ export function CvForm({
         </Button>
         <Button
           onClick={onDownloadPdf}
-          disabled={isDownloadingPdf || !cvText.trim() || !parsedData}
+          disabled={isDownloadingPdf || !cvText.trim() || !isPreviewAvailable}
           variant="outline"
         >
           {isDownloadingPdf ? (
@@ -127,10 +129,3 @@ export function CvForm({
     </div>
   );
 }
-
-// Helper to determine if parsedData is available, as CvForm doesn't directly receive it
-// This is a bit of a workaround due to component structure.
-// A more robust solution might involve lifting parsedData check to HomePage
-// or passing a specific boolean prop like `isPreviewAvailable`.
-// For now, we assume if cvText is present and parsing isn't happening, preview *could* be available.
-const parsedData = typeof window !== 'undefined' && (window as any).__parsedDataForCvForm;
