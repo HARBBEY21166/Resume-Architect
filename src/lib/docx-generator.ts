@@ -1,45 +1,67 @@
 
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, UnderlineType, TabStopType, TabStopPosition } from 'docx';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
 import { saveAs } from 'file-saver';
 import type { ParsedCvData } from '@/types/cv';
 
-const createSection = (title: string, content: string | undefined | null, headingLevel: HeadingLevel): Paragraph[] => {
+const createSection = (
+  sectionTitle: string,
+  content: string | undefined | null,
+  headingLevel: HeadingLevel
+): Paragraph[] => {
   const paragraphs: Paragraph[] = [];
-  if (title) {
+  if (sectionTitle) {
     paragraphs.push(
       new Paragraph({
-        text: title,
+        text: sectionTitle,
         heading: headingLevel,
-        spacing: { before: 200, after: 100 },
+        // Spacing for heading is primarily controlled by its style definition (e.g., Heading3)
       })
     );
   }
   if (content) {
-    content.split('\n').forEach(line => {
-      if (line.trim()) { // Avoid empty paragraphs
-        // Basic bullet point handling
-        if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) {
+    const lines = content.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.trim()) {
+        const isBullet = line.trim().startsWith('- ') || line.trim().startsWith('* ');
+        const textContent = isBullet ? line.substring(line.indexOf(' ') + 1).trim() : line.trim();
+        
+        const textRuns = [];
+        // Special handling for Experience section to bold titles/company lines
+        if (sectionTitle.toLowerCase() === 'experience' && !isBullet && textContent) {
+          textRuns.push(new TextRun({ text: textContent, bold: true }));
+        } else if (textContent) {
+          textRuns.push(new TextRun(textContent));
+        } else {
+          // Handle cases where textContent might be empty after trimming, to avoid empty TextRun
+          continue;
+        }
+
+        if (isBullet) {
           paragraphs.push(
             new Paragraph({
-              children: [
-                new TextRun({ text: line.substring(line.indexOf(' ') + 1).trim() }),
-              ],
+              children: textRuns,
               bullet: { level: 0 },
               indent: { left: 720 }, // 0.5 inch indent
-              style: 'normalPara',
+              spacing: { after: 80 }, // Spacing after bullet items
+              style: 'normalPara', // Apply base font style
             })
           );
         } else {
           paragraphs.push(
             new Paragraph({
-              children: [new TextRun(line.trim())],
+              children: textRuns,
+              // Spacing after regular paragraphs is controlled by 'normalPara' style (100)
+              // or by the specific line if it's an experience title (which is a normalPara too)
               style: 'normalPara',
             })
           );
         }
       }
-    });
+    }
   }
+  // Add a bit more space after a section if it had content, before the next section starts
+  // This is primarily handled by the 'before' spacing of the next Heading3
   return paragraphs;
 };
 
@@ -65,15 +87,16 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
       default: {
         heading1: {
           run: { size: 48, bold: true, font: "Calibri" }, // 24pt
-          paragraph: { alignment: AlignmentType.CENTER, spacing: { after: 200 } },
+          paragraph: { alignment: AlignmentType.CENTER, spacing: { after: 200, before: 0 } },
         },
+        // heading2 is not currently used but defined for completeness
         heading2: {
           run: { size: 32, bold: true, font: "Calibri" }, // 16pt
           paragraph: { spacing: { before: 300, after: 150 } },
         },
-        heading3: {
-            run: { size: 28, bold: true, font: "Calibri", color: "4F81BD" }, // 14pt, Accent color like
-            paragraph: { spacing: { before: 240, after: 120 } },
+        heading3: { // Used for section titles like Objective, Experience
+            run: { size: 28, bold: true, font: "Calibri", color: "4F81BD" }, // 14pt, Accent color
+            paragraph: { spacing: { before: 300, after: 150 } }, // Increased spacing around section titles
         },
       },
       paragraphStyles: [
@@ -84,7 +107,7 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
           next: "Normal",
           quickFormat: true,
           run: { font: "Calibri", size: 22 }, // 11pt
-          paragraph: { spacing: { after: 100 } },
+          paragraph: { spacing: { after: 100, before: 0 } }, // Default spacing after paragraphs
         },
         {
           id: "contactInfo",
@@ -93,7 +116,7 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
           next: "Normal",
           quickFormat: true,
           run: { font: "Calibri", size: 20 }, // 10pt
-          paragraph: { alignment: AlignmentType.CENTER, spacing: { after: 200 } },
+          paragraph: { alignment: AlignmentType.CENTER, spacing: { after: 240, before: 0 } }, // Spacing after contact block
         }
       ],
     },
@@ -112,12 +135,12 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
         new Paragraph({
           text: name || "Your Name",
           heading: HeadingLevel.HEADING_1,
-          alignment: AlignmentType.CENTER,
+          // Alignment and spacing are part of heading1 style
         }),
         new Paragraph({
           text: contactParts.join(' | '),
           style: 'contactInfo',
-          alignment: AlignmentType.CENTER,
+          // Alignment and spacing are part of contactInfo style
         }),
         ...(objective ? createSection("Objective", objective, HeadingLevel.HEADING_3) : []),
         ...(experience ? createSection("Experience", experience, HeadingLevel.HEADING_3) : []),
