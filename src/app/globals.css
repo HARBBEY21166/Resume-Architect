@@ -117,7 +117,7 @@
   main > div,
   main > div > div,
   div[class*="lg:sticky"],
-  .bg-card,
+  .bg-card, /* This rule might be too broad if other .bg-card elements exist that need different print styling */
   div[class*="shadow-"],
   .p-6, /* Card padding, to be reset */
   .rounded-lg,
@@ -131,7 +131,7 @@
     background: none !important;
     box-shadow: none !important;
     border: none !important;
-    padding: 0 !important; /* Remove screen padding */
+    padding: 0 !important; /* Remove screen padding - this can be problematic for .cv-template-container if it's also .bg-card */
     margin: 0 !important;  /* Remove screen margin */
     border-radius: 0 !important;
     overflow: visible !important;
@@ -172,7 +172,7 @@
     min-height: 100%; /* Fill height of its parent */
     height: auto !important;
     margin: 0 auto !important; /* Centering, though width 100% makes it less critical */
-    /* padding: 0 !important; */ /* ALLOW TEMPLATE'S OWN PADDING (e.g. p-8) TO WORK */
+    padding: 2rem !important; /* Explicitly set desired padding for print, overriding general resets */
     box-sizing: border-box !important;
     background-color: white !important;
     color: black !important;
