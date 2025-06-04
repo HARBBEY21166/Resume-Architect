@@ -1,5 +1,5 @@
 
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, ExternalHyperlink } from 'docx';
 import { saveAs } from 'file-saver';
 import type { ParsedCvData } from '@/types/cv';
 
@@ -26,24 +26,22 @@ const createSection = (
       const trimmedLineStart = line.trimStart();
       const fullTrimmedLine = line.trim();
 
-      if (!fullTrimmedLine) { // Line is empty or contains only whitespace
+      if (!fullTrimmedLine) { 
         if (sectionTitle.toLowerCase() === 'experience') {
           isFirstNonBulletInExperienceEntry = true;
         }
-        paragraphs.push(new Paragraph({ text: '', style: 'NormalParaStyle' })); // Add empty paragraph for spacing
+        paragraphs.push(new Paragraph({ text: '', style: 'NormalParaStyle' })); 
         continue;
       }
 
       const isBullet = trimmedLineStart.startsWith('- ') || trimmedLineStart.startsWith('* ');
-      // Get text content, removing bullet marker if present, and trim trailing spaces
       const textContentForRun = (isBullet ? trimmedLineStart.substring(trimmedLineStart.indexOf(' ') + 1) : line).trimEnd();
 
 
-      if (!textContentForRun.trim() && isBullet) { // e.g. line is just "- " or "-    "
-        // Skip creating a paragraph for a bullet that has no actual content after it
+      if (!textContentForRun.trim() && isBullet) { 
         continue;
       }
-      if (!textContentForRun.trim() && !isBullet) { // line is not a bullet but has no content after trimming (should be caught by !fullTrimmedLine)
+      if (!textContentForRun.trim() && !isBullet) { 
         continue;
       }
 
@@ -53,16 +51,15 @@ const createSection = (
         if (!isBullet) {
           if (isFirstNonBulletInExperienceEntry) {
             textRuns.push(new TextRun({ text: textContentForRun, bold: true }));
-            isFirstNonBulletInExperienceEntry = false; // Subsequent non-bullets in this entry are not bold
+            isFirstNonBulletInExperienceEntry = false; 
           } else {
-            textRuns.push(new TextRun({ text: textContentForRun })); // e.g., location/date line
+            textRuns.push(new TextRun({ text: textContentForRun })); 
           }
-        } else { // isBullet
+        } else { 
           textRuns.push(new TextRun({ text: textContentForRun }));
-          // After a bullet point, the next non-bullet line should be considered the start of a new entry (or just be normal text if not in experience)
           isFirstNonBulletInExperienceEntry = true;
         }
-      } else { // For sections other than experience
+      } else { 
         textRuns.push(new TextRun({ text: textContentForRun }));
       }
 
@@ -72,16 +69,16 @@ const createSection = (
             new Paragraph({
               children: textRuns,
               bullet: { level: 0 },
-              indent: { left: 360 }, // 0.25 inches
+              indent: { left: 360 }, 
               style: 'NormalParaStyle',
-              spacing: { after: 80 } // Approx 4pt
+              spacing: { after: 80 } 
             })
           );
         } else {
           paragraphs.push(
             new Paragraph({
               children: textRuns,
-              style: 'NormalParaStyle', // Inherits spacing from style (after: 120 / 6pt)
+              style: 'NormalParaStyle', 
             })
           );
         }
@@ -98,8 +95,27 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
   const contactParagraphs: Paragraph[] = [];
   if (contactInformation) {
     contactInformation.split('\n').forEach(line => {
-      if (line.trim()) {
-        contactParagraphs.push(new Paragraph({ text: line.trim(), style: "ContactInfoStyle" }));
+      const trimmedLine = line.trim();
+      if (trimmedLine) {
+        let paragraphChild;
+        if (trimmedLine.includes('@') && !trimmedLine.includes(' ')) { // Basic email check
+          paragraphChild = new ExternalHyperlink({
+            children: [new TextRun({ text: trimmedLine, style: "Hyperlink" })],
+            link: `mailto:${trimmedLine}`,
+          });
+        } else if (trimmedLine.startsWith('http') || trimmedLine.startsWith('www.') || 
+                   trimmedLine.includes('.com') || trimmedLine.includes('.org') || trimmedLine.includes('.net') ||
+                   trimmedLine.includes('linkedin.com') || trimmedLine.includes('github.com')) { // Basic URL check
+          const linkTarget = trimmedLine.startsWith('http') ? trimmedLine : `https://${trimmedLine}`;
+          paragraphChild = new ExternalHyperlink({
+            children: [new TextRun({ text: trimmedLine, style: "Hyperlink" })],
+            link: linkTarget,
+          });
+        } else {
+          // For other contact info like phone or address
+          paragraphChild = new TextRun(trimmedLine);
+        }
+        contactParagraphs.push(new Paragraph({ children: [paragraphChild], style: "ContactInfoStyle" }));
       }
     });
   }
@@ -119,7 +135,7 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
   }
 
   children.push(...contactParagraphs);
-  children.push(new Paragraph({ text: '', style: "NormalParaStyle", spacing: { before: 20 } })); // Small space after contact info
+  children.push(new Paragraph({ text: '', style: "NormalParaStyle", spacing: { before: 20, after: 20 } }));
 
 
   if (objective) children.push(...createSection("Objective", objective));
@@ -158,13 +174,27 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
     title: `${name || 'CV'} - Modern Template`,
     description: "Curriculum Vitae generated by CV-Genius",
     styles: {
+      characterStyles: [
+        {
+          id: 'Hyperlink',
+          name: 'Hyperlink',
+          basedOn: 'DefaultParagraphFont',
+          run: {
+            color: '0563C1', // Standard hyperlink blue
+            underline: {
+              type: 'single',
+              color: '0563C1',
+            },
+          },
+        },
+      ],
       paragraphStyles: [
         {
           id: "NameStyle",
           name: "Name Style",
           basedOn: "Normal",
           next: "Normal",
-          run: { size: 40, bold: true, font: "Calibri" }, // 20pt
+          run: { size: 40, bold: true, font: "Calibri" }, 
           paragraph: { alignment: AlignmentType.CENTER, spacing: { after: 100 } },
         },
         {
@@ -172,7 +202,7 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
           name: "Title Style",
           basedOn: "Normal",
           next: "Normal",
-          run: { size: 28, font: "Calibri" }, // 14pt
+          run: { size: 28, font: "Calibri" }, 
           paragraph: { alignment: AlignmentType.CENTER, spacing: { after: 180 } },
         },
         {
@@ -180,7 +210,7 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
           name: "Contact Info Style",
           basedOn: "Normal",
           next: "Normal",
-          run: { font: "Calibri", size: 20 }, // 10pt
+          run: { font: "Calibri", size: 20 }, 
           paragraph: { alignment: AlignmentType.CENTER, spacing: { after: 40 } },
         },
         {
@@ -188,15 +218,15 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
           name: "Section Title Style",
           basedOn: "Normal",
           next: "Normal",
-          run: { size: 26, bold: true, font: "Calibri", color: "3A5FCD" }, // 13pt, slightly darker blue
-          paragraph: { spacing: { before: 280, after: 140 } }, // 14pt before, 7pt after
+          run: { size: 26, bold: true, font: "Calibri", color: "2E74B5" }, // Using a Word-friendly blue
+          paragraph: { spacing: { before: 280, after: 140 } }, 
         },
         {
           id: "SkillSubheadingStyle",
           name: "Skill Subheading",
           basedOn: "Normal",
           next: "Normal",
-          run: { size: 22, bold: true, font: "Calibri" }, // 11pt
+          run: { size: 22, bold: true, font: "Calibri" }, 
           paragraph: { spacing: { before: 100, after: 80 } },
         },
         {
@@ -205,8 +235,8 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
           basedOn: "Normal",
           next: "Normal",
           quickFormat: true,
-          run: { font: "Calibri", size: 22 }, // 11pt
-          paragraph: { spacing: { after: 120 } }, // 6pt after
+          run: { font: "Calibri", size: 22 }, 
+          paragraph: { spacing: { after: 120 } }, 
         },
       ],
     },
@@ -214,7 +244,7 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
       properties: {
         page: {
           margin: {
-            top: 1080, // 0.75 inches
+            top: 1080, 
             right: 1080,
             bottom: 1080,
             left: 1080,
@@ -228,4 +258,3 @@ export async function generateDocxForModernTemplate(data: ParsedCvData): Promise
   const blob = await Packer.toBlob(doc);
   saveAs(blob, `${(name || 'CV').replace(/\s+/g, '_')}_Modern.docx`);
 }
-
