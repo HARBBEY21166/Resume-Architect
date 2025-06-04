@@ -172,7 +172,7 @@
     min-height: 100%; /* Fill height of its parent */
     height: auto !important;
     margin: 0 auto !important; /* Centering, though width 100% makes it less critical */
-    padding: 0 !important;   /* Remove its role as margin provider; templates add their own *internal* padding like p-8 */
+    /* padding: 0 !important; */ /* ALLOW TEMPLATE'S OWN PADDING (e.g. p-8) TO WORK */
     box-sizing: border-box !important;
     background-color: white !important;
     color: black !important;
