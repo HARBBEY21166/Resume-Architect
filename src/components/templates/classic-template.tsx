@@ -36,7 +36,7 @@ export function ClassicTemplate({ data }: ClassicTemplateProps) {
       {objective && (
         <>
           <hr className="my-6 border-border" />
-          <section className="mb-6">
+          <section className="mb-6 text-center">
             <h2 className="font-headline text-xl font-semibold text-accent mb-2 tracking-wide">OBJECTIVE</h2>
             <div className="text-sm" dangerouslySetInnerHTML={{ __html: objective?.replace(/\n/g, '<br />') || 'Your career objective...' }} />
           </section>
@@ -45,14 +45,14 @@ export function ClassicTemplate({ data }: ClassicTemplateProps) {
 
       <hr className="my-6 border-border" />
 
-      <section className="mb-6">
+      <section className="mb-6 text-center">
         <h2 className="font-headline text-xl font-semibold text-accent mb-2 tracking-wide">EXPERIENCE</h2>
         <div className="space-y-3 text-sm" dangerouslySetInnerHTML={{ __html: experience?.replace(/\n/g, '<br />') || 'Your professional experience...' }} />
       </section>
 
       <hr className="my-6 border-border" />
 
-      <section className="mb-6">
+      <section className="mb-6 text-center">
         <h2 className="font-headline text-xl font-semibold text-accent mb-2 tracking-wide">EDUCATION</h2>
         <div className="space-y-1 text-sm" dangerouslySetInnerHTML={{ __html: education?.replace(/\n/g, '<br />') || 'Your educational background...' }} />
       </section>
@@ -60,7 +60,7 @@ export function ClassicTemplate({ data }: ClassicTemplateProps) {
       {(technicalSkills || personalSkills) && (
         <>
           <hr className="my-6 border-border" />
-          <section className="mb-6">
+          <section className="mb-6 text-center">
             <h2 className="font-headline text-xl font-semibold text-accent mb-2 tracking-wide">SKILLS</h2>
             <div className="text-sm" dangerouslySetInnerHTML={{ __html: skillsContent?.replace(/\n/g, '<br />') || 'Your key skills...' }} />
           </section>
@@ -70,7 +70,7 @@ export function ClassicTemplate({ data }: ClassicTemplateProps) {
       {certifications && (
         <>
           <hr className="my-6 border-border" />
-          <section className="mb-6">
+          <section className="mb-6 text-center">
             <h2 className="font-headline text-xl font-semibold text-accent mb-2 tracking-wide">CERTIFICATIONS</h2>
             <div className="text-sm" dangerouslySetInnerHTML={{ __html: certifications?.replace(/\n/g, '<br />') || 'Your certifications...' }} />
           </section>
@@ -80,7 +80,7 @@ export function ClassicTemplate({ data }: ClassicTemplateProps) {
       {interest && (
         <>
           <hr className="my-6 border-border" />
-          <section>
+          <section className="text-center">
             <h2 className="font-headline text-xl font-semibold text-accent mb-2 tracking-wide">INTERESTS</h2>
             <div className="text-sm" dangerouslySetInnerHTML={{ __html: interest?.replace(/\n/g, '<br />') || 'Your interests...' }} />
           </section>
