@@ -148,7 +148,7 @@ export default function HomePage() {
 
     try {
       window.print();
-      toast({ title: "Print Dialog Opened", description: "Choose 'Save as PDF' to download your CV." });
+      
     } catch (e) {
       console.error("PDF Generation error (window.print):", e);
       const errorMessage = e instanceof Error ? e.message : "An unknown error occurred during PDF generation.";
